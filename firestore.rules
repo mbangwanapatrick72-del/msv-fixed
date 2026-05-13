@@ -1,0 +1,113 @@
+// ════════════════════════════════════════════════════════════════════════════
+// FIRESTORE RULES — patient-web-app-8b0d4  (patient project)
+// Deploy: firebase use patient-web-app-8b0d4 && firebase deploy --only firestore:rules
+// ════════════════════════════════════════════════════════════════════════════
+// rules_version = '2';
+// service cloud.firestore {
+//   match /databases/{database}/documents {
+//     match /users/{uid} {
+//       allow read, write: if request.auth != null && request.auth.uid == uid;
+//     }
+//     match /patients/{uid} {
+//       allow read, write: if request.auth != null && request.auth.uid == uid;
+//     }
+//     match /{document=**} { allow read, write: if false; }
+//   }
+// }
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// FIRESTORE RULES — doctor-web-app-a29a5  (SHARED BACKEND)
+// Deploy: firebase use doctor-web-app-a29a5 && firebase deploy --only firestore:rules
+//
+// STEP 0 — Enable Anonymous Authentication in Firebase Console:
+//   Firebase Console → doctor-web-app-a29a5 → Authentication
+//   → Sign-in method → Anonymous → Enable ✅
+//
+// HOW CROSS-PROJECT AUTH WORKS:
+//   Patient browsers call ensureSharedAuth() → signs them in anonymously.
+//   The anonymous uid is stored as "msv_shared_uid" in sessionStorage.
+//   All Firestore writes from patients use this anonymous uid.
+//   Rules validate request.auth.uid against stored uid fields. ✓
+// ════════════════════════════════════════════════════════════════════════════
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Doctors ────────────────────────────────────────────────────────────
+    // Any authenticated user (incl. anonymous patients) can READ.
+    // Only the doctor (their uid == doctorId) can WRITE their own profile.
+    match /doctors/{doctorId} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == doctorId;
+      allow update: if request.auth != null && request.auth.uid == doctorId;
+      allow delete: if false;
+    }
+
+    // ── Appointments ───────────────────────────────────────────────────────
+    // CREATE: Any authenticated user can book.
+    //         patientUid MUST equal the requester's uid (their anonymous uid).
+    // READ / UPDATE: Doctor OR the patient who owns it.
+    // DELETE: Only the doctor.
+    match /appointments/{apptId} {
+      allow create: if request.auth != null
+                    && request.resource.data.patientUid == request.auth.uid;
+
+      allow read:   if request.auth != null
+                    && (resource.data.doctorId   == request.auth.uid
+                    ||  resource.data.patientUid == request.auth.uid);
+
+      allow update: if request.auth != null
+                    && (resource.data.doctorId   == request.auth.uid
+                    ||  resource.data.patientUid == request.auth.uid);
+
+      allow delete: if request.auth != null
+                    && resource.data.doctorId == request.auth.uid;
+    }
+
+    // ── Patient records ────────────────────────────────────────────────────
+    // A patient record is created either:
+    //   (a) by the patient themselves when they select a doctor or book —
+    //       patientSharedUid == request.auth.uid (their anonymous uid)
+    //   (b) by the doctor manually —
+    //       doctorId == request.auth.uid
+    //
+    // READ: Doctor reads their own patients.
+    //       Patient reads their own record (patientSharedUid == uid).
+    // UPDATE: Doctor can update any of their patients.
+    //         Patient can update their own record.
+    // DELETE: Only the doctor.
+    match /patients/{patientId} {
+      allow create: if request.auth != null
+                    && (
+                      request.resource.data.doctorId == request.auth.uid
+                      || request.resource.data.patientSharedUid == request.auth.uid
+                    );
+
+      allow read:   if request.auth != null
+                    && (resource.data.doctorId        == request.auth.uid
+                    ||  resource.data.patientSharedUid == request.auth.uid);
+
+      allow update: if request.auth != null
+                    && (resource.data.doctorId        == request.auth.uid
+                    ||  resource.data.patientSharedUid == request.auth.uid);
+
+      allow delete: if request.auth != null
+                    && resource.data.doctorId == request.auth.uid;
+    }
+
+    // ── Approved Doctors List ──────────────────────────────────────────────
+    // Enrollment pre-approval list.
+    // READ: Any authenticated user (check during enrollment).
+    // WRITE: Only from Cloud Functions (admin context).
+    match /approved_doctors/{email} {
+      allow read:  if request.auth != null;
+      allow create, update, delete: if false;
+    }
+
+    // ── Deny everything else ───────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

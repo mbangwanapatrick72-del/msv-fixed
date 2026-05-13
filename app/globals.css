@@ -1,0 +1,659 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Google Fonts ── */
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Nunito:wght@300;400;600;700;800&display=swap");
+
+@layer base {
+  :root {
+    /* shadcn/ui tokens */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.625rem;
+
+    /* INGRID 1 — Patient palette */
+    --teal: #1abc9c;
+    --teal-dark: #159f84;
+    --teal-light: #e8f8f5;
+    --teal-mid: #a8e6da;
+    --navy: #0d1f3c;
+    --navy-mid: #1a3358;
+    --text: #1a2332;
+    --text-mid: #4a5568;
+    --text-light: #8a97a8;
+    --border-pat: #e2e8f0;
+    --bg: #f8fafb;
+    --shadow: 0 4px 24px rgba(13, 31, 60, 0.09);
+    --shadow-sm: 0 2px 10px rgba(13, 31, 60, 0.06);
+
+    /* INGRID 2 — Doctor palette */
+    --blue: #1a4db5;
+    --blue-dark: #13399a;
+    --blue-light: #bfcfef;
+    --blue-tint: #e8eef9;
+    --bg-mid: #dce6f5;
+    --doc-text: #5a6a74;
+    --doc-text-light: #9ab0bb;
+    --doc-radius: 16px;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "DM Sans", sans-serif;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: "Sora", sans-serif;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+/* ══════════════════════════════
+   PATIENT APP (INGRID 1) STYLES
+══════════════════════════════ */
+
+/* Navbar */
+.pat-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  border-bottom: 1.5px solid var(--border-pat);
+  box-shadow: 0 1px 8px rgba(13, 31, 60, 0.05);
+}
+.pat-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 36px;
+  height: 66px;
+  gap: 0;
+}
+.pat-brand {
+  font-family: "Sora", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--teal);
+  letter-spacing: 0.04em;
+  margin-right: 48px;
+  flex-shrink: 0;
+}
+.pat-nav-link {
+  display: block;
+  padding: 0 18px;
+  height: 66px;
+  line-height: 66px;
+  font-size: 0.93rem;
+  font-weight: 500;
+  color: var(--text-mid);
+  transition: color 0.2s;
+  position: relative;
+}
+.pat-nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  background: var(--teal);
+  transform: scaleX(0);
+  transition: transform 0.2s;
+}
+.pat-nav-link:hover,
+.pat-nav-link.active {
+  color: var(--text);
+}
+.pat-nav-link:hover::after,
+.pat-nav-link.active::after {
+  transform: scaleX(1);
+}
+
+/* Buttons */
+.btn-teal-outline {
+  padding: 9px 22px;
+  border-radius: 10px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--teal);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-teal-outline:hover {
+  background: var(--teal);
+  color: white;
+}
+.btn-teal-filled {
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--teal);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(26, 188, 156, 0.35);
+}
+.btn-teal-filled:hover {
+  background: var(--teal-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(26, 188, 156, 0.45);
+}
+
+/* Page header banner */
+.pat-page-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  padding: 52px 36px;
+  position: relative;
+  overflow: hidden;
+}
+.pat-page-header::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
+  background: rgba(26, 188, 156, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.pat-ph-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.pat-ph-sup {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal-mid);
+  margin-bottom: 8px;
+}
+.pat-ph-h1 {
+  font-family: "Sora", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 10px;
+}
+.pat-ph-p {
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 580px;
+  line-height: 1.6;
+}
+
+/* Section */
+.pat-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 36px;
+}
+.pat-section-sup {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.pat-section-h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.25;
+}
+.pat-section-p {
+  font-size: 0.95rem;
+  color: var(--text-mid);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
+/* Service cards */
+.srv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+.srv-card {
+  background: white;
+  border: 1.5px solid var(--border-pat);
+  border-radius: 16px;
+  padding: 28px 24px;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.srv-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--teal);
+}
+.srv-icon {
+  font-size: 2rem;
+  margin-bottom: 14px;
+}
+.srv-title {
+  font-family: "Sora", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.srv-desc {
+  font-size: 0.86rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+/* Footer */
+.pat-footer {
+  background: var(--navy);
+  padding: 32px 36px;
+}
+.pat-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.pat-footer-brand {
+  font-family: "Sora", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--teal);
+}
+.pat-footer-copy {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+.pat-footer-links {
+  display: flex;
+  gap: 20px;
+}
+.pat-footer-links a {
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s;
+}
+.pat-footer-links a:hover {
+  color: var(--teal);
+}
+
+/* Auth form */
+.auth-card {
+  background: white;
+  border-radius: 18px;
+  padding: 36px;
+  box-shadow: var(--shadow);
+}
+.form-field {
+  margin-bottom: 16px;
+}
+.form-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border-pat);
+  border-radius: 10px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.93rem;
+  color: var(--text);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--teal);
+}
+.form-submit {
+  width: 100%;
+  padding: 13px;
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(26, 188, 156, 0.35);
+}
+.form-submit:hover {
+  background: var(--teal-dark);
+  transform: translateY(-1px);
+}
+.auth-divider {
+  text-align: center;
+  margin: 20px 0;
+  position: relative;
+}
+.auth-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-pat);
+}
+.auth-divider span {
+  position: relative;
+  background: white;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  color: var(--text-light);
+}
+.btn-google {
+  width: 100%;
+  padding: 11px;
+  background: white;
+  border: 1.5px solid var(--border-pat);
+  border-radius: 10px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-google:hover {
+  background: #f8f8f8;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* Toast */
+.msv-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #1e2a38;
+  color: white;
+  padding: 13px 26px;
+  border-radius: 99px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+.msv-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ══════════════════════════════
+   DOCTOR APP (INGRID 2) STYLES
+══════════════════════════════ */
+
+/* Wave background */
+.doc-wave-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(160deg, #b3c9e8 0%, #ccdaf2 40%, #dfe9f8 70%, #f0f5fd 100%);
+}
+.doc-wave {
+  position: absolute;
+  width: 200%;
+  height: 300px;
+  border-radius: 50%;
+  opacity: 0.55;
+}
+.doc-wave-1 {
+  background: rgba(255, 255, 255, 0.6);
+  bottom: 30%;
+  left: -50%;
+  transform: rotate(-4deg);
+}
+.doc-wave-2 {
+  background: rgba(255, 255, 255, 0.45);
+  bottom: 5%;
+  left: -20%;
+  transform: rotate(3deg);
+  height: 250px;
+}
+
+/* Doctor auth pages */
+.doc-page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 48px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  animation: doc-fade-up 0.45s ease both;
+}
+@keyframes doc-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.doc-logo-wrap {
+  background: white;
+  border-radius: 24px;
+  padding: 20px 24px 16px;
+  box-shadow: 0 6px 28px rgba(26, 77, 181, 0.18);
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.doc-input-group {
+  width: 100%;
+  background: white;
+  border-radius: var(--doc-radius);
+  box-shadow: 0 4px 20px rgba(26, 77, 181, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.doc-input-field {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px;
+  gap: 14px;
+}
+.doc-input-field + .doc-input-field {
+  border-top: 1px solid #e4ecf7;
+}
+.doc-input-field input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Nunito", sans-serif;
+  font-size: 1rem;
+  color: var(--doc-text);
+}
+.doc-input-field input::placeholder {
+  color: var(--doc-text-light);
+}
+.doc-btn-primary {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: var(--doc-radius);
+  background: var(--blue);
+  color: white;
+  font-family: "Nunito", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 6px 22px rgba(26, 77, 181, 0.35);
+  margin-bottom: 18px;
+}
+.doc-btn-primary:hover {
+  background: var(--blue-dark);
+  transform: translateY(-1px);
+}
+.doc-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Dashboard layout */
+.doc-dashboard {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  background: #eef2f9;
+  font-family: "Nunito", sans-serif;
+}
+.doc-sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 0;
+  height: 100%;
+  box-shadow: 3px 0 18px rgba(26, 77, 181, 0.07);
+}
+.doc-brand-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1a4db5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.doc-brand-name em {
+  color: #e74c3c;
+  font-style: normal;
+}
+.doc-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #7f8fa6;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: "Nunito", sans-serif;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+.doc-nav-item:hover {
+  background: #eef2f9;
+  color: #1a4db5;
+}
+.doc-nav-item.active {
+  background: #eef2f9;
+  color: #1a4db5;
+  font-weight: 800;
+}
+.doc-nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 22px;
+  background: #1a4db5;
+  border-radius: 0 3px 3px 0;
+}
+.doc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 26px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(26, 77, 181, 0.06);
+  flex-shrink: 0;
+}
+
+/* Scrollbar */
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: #f1f1f1; }
+*::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background: #555; }
+* { scrollbar-width: thin; scrollbar-color: #cbcbcb #f1f1f1; }
+
+/* ── Shared modal / page animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.3); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes float-card {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* animate-[float-card_3.5s_ease-in-out_infinite] used in patient home hero */
+.animate-float { animation: float-card 3.5s ease-in-out infinite; }
