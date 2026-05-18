@@ -90,8 +90,8 @@ export default function PatientProfil() {
     let unsub: (() => void) | undefined;
 
     ensureSharedAuth().then(() => {
-      // subscribePatientAppointments uses getSharedUid() internally
-      // so it always queries the anonymous UID that matches Firestore docs
+      // subscribePatientAppointments filters by the actual patient UID (session.uid)
+      // to ensure each patient only sees their own appointments (data isolation)
       unsub = subscribePatientAppointments(session.uid, (list) => {
         setAppts(list);
         setApptLoading(false);
