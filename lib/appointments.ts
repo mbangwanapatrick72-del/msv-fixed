@@ -258,16 +258,18 @@ export async function cancelAppointment(apptId: string): Promise<void> {
  * Results sorted client-side by date + time.
  */
 export function subscribePatientAppointments(
-  patientUid: string,
+  _unused: string,
   callback: (appts: Appointment[]) => void
 ): Unsubscribe {
-  if (!patientUid) { callback([]); return () => {}; }
+  const sharedUid = getSharedUid();
+  if (!sharedUid) { callback([]); return () => {}; }
 
   // ← Single where() clause only — Firestore handles this with auto-indexes
-  // Use the actual patient UID, not the shared UID, to ensure data isolation
+  // Use getSharedUid() (the shared project anonymous UID) to ensure proper data isolation
+  // Each patient browser gets its own anonymous UID on the shared project
   const q = query(
     collection(sharedDb, APPT_COLL),
-    where("patientUid", "==", patientUid)
+    where("patientUid", "==", sharedUid)
   );
 
   return onSnapshot(q, (snap: QuerySnapshot) => {

@@ -90,8 +90,9 @@ export default function PatientProfil() {
     let unsub: (() => void) | undefined;
 
     ensureSharedAuth().then(() => {
-      // subscribePatientAppointments filters by the actual patient UID (session.uid)
-      // to ensure each patient only sees their own appointments (data isolation)
+      // subscribePatientAppointments uses getSharedUid() internally
+      // Each patient browser has its own anonymous UID on the shared project
+      // so this properly isolates appointments per patient (data isolation)
       unsub = subscribePatientAppointments(session.uid, (list) => {
         setAppts(list);
         setApptLoading(false);

@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { patientAuth, patientDb } from "@/lib/firebase-patient";
+import { resetSharedAuth } from "@/lib/firebase-shared";
 import { toast } from "sonner";
 
 export default function PatientLogin() {
@@ -27,6 +28,9 @@ export default function PatientLogin() {
     }
     setLoading(true);
     try {
+      // Reset shared auth to ensure fresh anonymous UID for this patient
+      // (prevents seeing appointments from previous patient accounts)
+      resetSharedAuth();
       const cred = await signInWithEmailAndPassword(patientAuth, email, password);
       const user = cred.user;
       const sessionUser = {
@@ -63,6 +67,9 @@ export default function PatientLogin() {
   async function handleGoogle() {
     const provider = new GoogleAuthProvider();
     try {
+      // Reset shared auth to ensure fresh anonymous UID for this patient
+      // (prevents seeing appointments from previous patient accounts)
+      resetSharedAuth();
       const result = await signInWithPopup(patientAuth, provider);
       const user = result.user;
       // Ensure user doc exists
