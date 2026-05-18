@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { patientDb } from "@/lib/firebase-patient";
@@ -57,22 +57,26 @@ export default function PatientQuestionnaire() {
     }));
   }, [router]);
 
-  const age = calcAge(form.dob);
-  const bmi = calcBMI(form.weight, form.height);
-
-  const REQUIRED_KEYS: (keyof typeof form)[] = [
+  const REQUIRED_KEYS: (keyof typeof form)[] = useMemo(() => [
     "fullname","email","dob","address","weight","height",
     "allergies","bloodgroup","emergencyName","emergencyPhone",
     "q1","q2","q3","q4","q5",
-  ];
-  const filled = REQUIRED_KEYS.filter((k) => {
-    const v = form[k];
-    if (Array.isArray(v)) return v.length > 0;
-    return String(v).trim() !== "";
-  }).length;
-  const pct = Math.round((filled / REQUIRED_KEYS.length) * 100);
+  ], []);
 
-  function toggleHistory(val: string) {
+  const age = useMemo(() => calcAge(form.dob), [form.dob]);
+  const bmi = useMemo(() => calcBMI(form.weight, form.height), [form.weight, form.height]);
+
+  const filled = useMemo(() => {
+    return REQUIRED_KEYS.filter((k) => {
+      const v = form[k];
+      if (Array.isArray(v)) return v.length > 0;
+      return String(v).trim() !== "";
+    }).length;
+  }, [form, REQUIRED_KEYS]);
+
+  const pct = useMemo(() => Math.round((filled / REQUIRED_KEYS.length) * 100), [filled, REQUIRED_KEYS.length]);
+
+  const toggleHistory = useCallback((val: string) => {
     setForm((f) => {
       if (val === "Aucun") return { ...f, history: f.history.includes("Aucun") ? [] : ["Aucun"] };
       const without = f.history.filter((h) => h !== "Aucun");
@@ -81,7 +85,11 @@ export default function PatientQuestionnaire() {
         history: without.includes(val) ? without.filter((h) => h !== val) : [...without, val],
       };
     });
-  }
+  }, []);
+
+  const handleFieldChange = useCallback((field: keyof typeof form, value: any) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   async function handleSubmit() {
     if (filled < REQUIRED_KEYS.length) {
@@ -147,7 +155,7 @@ export default function PatientQuestionnaire() {
             <span>{filled} / {REQUIRED_KEYS.length} champs complétés</span>
           </div>
           <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
-            <div className="h-full bg-[#1abc9c] rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-[#1abc9c] rounded-full" style={{ width: `${pct}%` }} />
           </div>
         </div>
       </div>
@@ -159,10 +167,10 @@ export default function PatientQuestionnaire() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e2e8f0] space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Nom complet" req>
-                <input value={form.fullname} onChange={e=>setForm({...form,fullname:e.target.value})} placeholder="Prénom Nom"/>
+                <input value={form.fullname} onChange={e=>handleFieldChange("fullname",e.target.value)} placeholder="Prénom Nom"/>
               </Field>
               <Field label="Surnom / Prénom usuel">
-                <input value={form.nickname} onChange={e=>setForm({...form,nickname:e.target.value})} placeholder="Optionnel"/>
+                <input value={form.nickname} onChange={e=>handleFieldChange("nickname",e.target.value)} placeholder="Optionnel"/>
               </Field>
             </div>
             <Field label="Adresse e-mail" req>
@@ -170,14 +178,14 @@ export default function PatientQuestionnaire() {
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Date de naissance" req>
-                <input type="date" value={form.dob} readOnly className="bg-[#f8fafb] cursor-not-allowed"/>
+                <input type="date" value={form.dob} onChange={e=>handleFieldChange("dob",e.target.value)} placeholder="Sélectionnez votre date de naissance"/>
               </Field>
               <Field label="Âge">
                 <input value={age} readOnly className="bg-[#f8fafb] cursor-not-allowed"/>
               </Field>
             </div>
             <Field label="Adresse" req>
-              <input value={form.address} onChange={e=>setForm({...form,address:e.target.value})} placeholder="Numéro, rue, ville, pays"/>
+              <input value={form.address} onChange={e=>handleFieldChange("address",e.target.value)} placeholder="Numéro, rue, ville, pays"/>
             </Field>
           </div>
         </div>
@@ -188,10 +196,10 @@ export default function PatientQuestionnaire() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e2e8f0] space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Poids (kg)" req>
-                <input type="number" min="1" max="500" value={form.weight} onChange={e=>setForm({...form,weight:e.target.value})} placeholder="Ex : 70"/>
+                <input type="number" min="1" max="500" value={form.weight} onChange={e=>handleFieldChange("weight",e.target.value)} placeholder="Ex : 70"/>
               </Field>
               <Field label="Taille (cm)" req>
-                <input type="number" min="1" max="300" value={form.height} onChange={e=>setForm({...form,height:e.target.value})} placeholder="Ex : 170"/>
+                <input type="number" min="1" max="300" value={form.height} onChange={e=>handleFieldChange("height",e.target.value)} placeholder="Ex : 170"/>
               </Field>
             </div>
             {bmi.val !== "—" && (
@@ -209,10 +217,10 @@ export default function PatientQuestionnaire() {
           <div className="text-sm font-bold text-[#1abc9c] uppercase tracking-wide mb-3">🩺 Informations médicales</div>
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e2e8f0] space-y-4">
             <Field label="Allergies connues" req>
-              <input value={form.allergies} onChange={e=>setForm({...form,allergies:e.target.value})} placeholder="Ex : pénicilline, arachides… (ou Aucune)"/>
+              <input value={form.allergies} onChange={e=>handleFieldChange("allergies",e.target.value)} placeholder="Ex : pénicilline, arachides… (ou Aucune)"/>
             </Field>
             <Field label="Groupe sanguin" req>
-              <select value={form.bloodgroup} onChange={e=>setForm({...form,bloodgroup:e.target.value})}>
+              <select value={form.bloodgroup} onChange={e=>handleFieldChange("bloodgroup",e.target.value)}>
                 <option value="">— Sélectionnez —</option>
                 {BLOOD_GROUPS.map(g=><option key={g} value={g}>{g === "inconnu" ? "Je ne sais pas" : g}</option>)}
               </select>
@@ -235,7 +243,7 @@ export default function PatientQuestionnaire() {
               </div>
             </Field>
             <Field label="Précisions (optionnel)">
-              <input value={form.historyOther} onChange={e=>setForm({...form,historyOther:e.target.value})} placeholder="Précisez d'éventuels antécédents supplémentaires"/>
+              <input value={form.historyOther} onChange={e=>handleFieldChange("historyOther",e.target.value)} placeholder="Précisez d'éventuels antécédents supplémentaires"/>
             </Field>
           </div>
         </div>
@@ -245,10 +253,10 @@ export default function PatientQuestionnaire() {
           <div className="text-sm font-bold text-[#1abc9c] uppercase tracking-wide mb-3">🚨 Contact d&apos;urgence</div>
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e2e8f0] space-y-4">
             <Field label="Personne à contacter" req>
-              <input value={form.emergencyName} onChange={e=>setForm({...form,emergencyName:e.target.value})} placeholder="Nom complet"/>
+              <input value={form.emergencyName} onChange={e=>handleFieldChange("emergencyName",e.target.value)} placeholder="Nom complet"/>
             </Field>
             <Field label="Numéro de téléphone" req>
-              <input type="tel" value={form.emergencyPhone} onChange={e=>setForm({...form,emergencyPhone:e.target.value})} placeholder="Ex : +237 6 00 00 00 00"/>
+              <input type="tel" value={form.emergencyPhone} onChange={e=>handleFieldChange("emergencyPhone",e.target.value)} placeholder="Ex : +237 6 00 00 00 00"/>
             </Field>
           </div>
         </div>
@@ -258,7 +266,7 @@ export default function PatientQuestionnaire() {
           <div className="text-sm font-bold text-[#1abc9c] uppercase tracking-wide mb-3">📝 Questionnaire de santé</div>
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e2e8f0] space-y-4">
             <Field label="Comment évaluez-vous votre état de santé général ?" req>
-              <select value={form.q1} onChange={e=>setForm({...form,q1:e.target.value})}>
+              <select value={form.q1} onChange={e=>handleFieldChange("q1",e.target.value)}>
                 <option value="">— Sélectionnez —</option>
                 <option value="tres-bon">Très bon</option>
                 <option value="bon">Bon</option>
@@ -267,17 +275,17 @@ export default function PatientQuestionnaire() {
               </select>
             </Field>
             <Field label="Avez-vous des douleurs actuellement ?" req>
-              <select value={form.q2} onChange={e=>setForm({...form,q2:e.target.value})}>
+              <select value={form.q2} onChange={e=>handleFieldChange("q2",e.target.value)}>
                 <option value="">— Sélectionnez —</option>
                 <option value="non">Non</option>
                 <option value="oui">Oui</option>
               </select>
             </Field>
             <Field label='Décrivez vos symptômes actuels (ou "Aucun")' req>
-              <textarea rows={3} value={form.q3} onChange={e=>setForm({...form,q3:e.target.value})} placeholder="Ex : maux de tête depuis 3 jours, fatigue…" style={{resize:"vertical",minHeight:90}}/>
+              <textarea rows={3} value={form.q3} onChange={e=>handleFieldChange("q3",e.target.value)} placeholder="Ex : maux de tête depuis 3 jours, fatigue…" style={{resize:"vertical",minHeight:90}}/>
             </Field>
             <Field label="Prenez-vous des médicaments en ce moment ?" req>
-              <select value={form.q4} onChange={e=>setForm({...form,q4:e.target.value})}>
+              <select value={form.q4} onChange={e=>handleFieldChange("q4",e.target.value)}>
                 <option value="">— Sélectionnez —</option>
                 <option value="non">Non</option>
                 <option value="traitement">Oui, traitement régulier</option>
@@ -285,7 +293,7 @@ export default function PatientQuestionnaire() {
               </select>
             </Field>
             <Field label='Remarques complémentaires (ou "RAS")' req>
-              <textarea rows={2} value={form.q5} onChange={e=>setForm({...form,q5:e.target.value})} placeholder="Informations supplémentaires pour votre médecin…" style={{resize:"vertical",minHeight:70}}/>
+              <textarea rows={2} value={form.q5} onChange={e=>handleFieldChange("q5",e.target.value)} placeholder="Informations supplémentaires pour votre médecin…" style={{resize:"vertical",minHeight:70}}/>
             </Field>
           </div>
         </div>
