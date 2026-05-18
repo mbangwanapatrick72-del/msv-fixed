@@ -59,8 +59,11 @@ const SOURCE_BADGE: Record<string, { label: string; color: string }> = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function ini(name: string) {
   return name.split(" ").map(w => w[0]||"").join("").substring(0,2).toUpperCase() || "DR";
-}
-function dobFmt(dob?: string) {
+}function cleanDoctorName(name: string) {
+  if (!name) return "—";
+  const trimmed = name.trim();
+  return trimmed.startsWith("Dr.") || trimmed.startsWith("Dr ") ? trimmed : `Dr. ${trimmed}`;
+}function dobFmt(dob?: string) {
   if (!dob) return "—";
   const p = dob.split("-");
   return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : dob;
@@ -392,7 +395,7 @@ export default function DoctorDashboard() {
             <div className="bg-white rounded-[18px] p-6 flex items-center justify-between shadow-sm" style={{gridColumn:1,gridRow:1}}>
               <div>
                 <h2 className="text-[1.5rem] font-extrabold text-[#1a4db5] mb-1.5">
-                  Bienvenue, Dr. {nm.split(" ")[0]} 👋
+                  Bienvenue, {cleanDoctorName(nm).split(" ")[0]} 👋
                 </h2>
                 <p className="text-[0.86rem] text-[#7f8fa6] leading-[1.6]">
                   <strong className="text-[#1e2a38]">{confirmedToday}</strong> RDV confirmé{confirmedToday>1?"s":""} aujourd&apos;hui
@@ -473,7 +476,7 @@ export default function DoctorDashboard() {
                 <div className="w-[68px] h-[68px] rounded-full bg-gradient-to-br from-[#bfcfef] to-[#1a4db5] mx-auto mb-2.5 flex items-center justify-center text-[1.65rem] font-extrabold text-white">
                   {initials}
                 </div>
-                <div className="text-[0.97rem] font-extrabold text-[#1e2a38]">Dr. {nm||"—"}</div>
+                <div className="text-[0.97rem] font-extrabold text-[#1e2a38]">{cleanDoctorName(nm)}</div>
                 <div className="text-[0.74rem] text-[#9ab0bb] font-semibold mt-0.5">{spec}</div>
                 <div className="flex justify-around mt-4 pt-3.5 border-t border-[#f0f5fc]">
                   {[["Patients",String(patients.length)],["Total RDV",String(allAppts.length)]].map(([l,v])=>(
@@ -751,7 +754,7 @@ export default function DoctorDashboard() {
                   {initials}
                 </div>
                 <div>
-                  <div className="text-[1.2rem] font-extrabold text-[#1e2a38]">Dr. {nm||"—"}</div>
+                  <div className="text-[1.2rem] font-extrabold text-[#1e2a38]">{cleanDoctorName(nm)}</div>
                   <div className="text-[0.84rem] text-[#1a4db5] font-bold">{spec}</div>
                 </div>
               </div>

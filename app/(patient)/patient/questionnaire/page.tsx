@@ -31,6 +31,13 @@ function calcBMI(weight: string, height: string) {
   return           { val: bmi, label: "Obésité",                 cls: "text-red-500" };
 }
 
+const Field = ({ label, req, children }: { label: string; req?: boolean; children: React.ReactNode }) => (
+  <div className="form-field">
+    <label>{label}{req && <span className="text-red-500 ml-1">*</span>}</label>
+    {children}
+  </div>
+);
+
 export default function PatientQuestionnaire() {
   const router = useRouter();
   const [session, setSession] = useState<{uid:string;email:string;name:string;dob?:string}|null>(null);
@@ -127,12 +134,7 @@ export default function PatientQuestionnaire() {
     }
   }
 
-  const Field = ({ label, req, children }: { label: string; req?: boolean; children: React.ReactNode }) => (
-    <div className="form-field">
-      <label>{label}{req && <span className="text-red-500 ml-1">*</span>}</label>
-      {children}
-    </div>
-  );
+
 
   return (
     <div className="min-h-screen bg-[#f8fafb]" style={{ fontFamily: "DM Sans, sans-serif" }}>
