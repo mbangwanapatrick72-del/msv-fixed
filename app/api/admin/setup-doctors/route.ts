@@ -9,34 +9,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const doctors = [
-      {
-        email: "rossignolessengue@gmail.com",
-        password: "rossingnolessengue@",
-        name: "Dr. Rossignol Essengue",
-        onmc: "CM-00001",
-        specialty: "Médecin généraliste",
-        specIdx: 0,
-        phone: "+237 6 12 34 5678",
-        dob: "1985-06-15",
-        sex: "M",
-        idNum: "CM123456789",
-        country: "Cameroun",
-      },
-      {
-        email: "anaisessengue@gmail.com",
-        password: "anaisessengue@",
-        name: "Dr. Anais Essengue",
-        onmc: "CM-00002",
-        specialty: "Gynécologue-obstétricien(ne)",
-        specIdx: 1,
-        phone: "+237 6 98 76 5432",
-        dob: "1988-03-22",
-        sex: "F",
-        idNum: "CM987654321",
-        country: "Cameroun",
-      },
-    ];
+    // Get doctors from request body, or use defaults
+    let doctors = [];
+    try {
+      const body = await req.json();
+      if (body.doctors && Array.isArray(body.doctors)) {
+        doctors = body.doctors;
+      }
+    } catch {
+      // If no body, use default empty array to do nothing
+      doctors = [];
+    }
+
+    // If no doctors provided, return error
+    if (doctors.length === 0) {
+      return NextResponse.json(
+        { error: "No doctors provided in request body" },
+        { status: 400 }
+      );
+    }
 
     const results = [];
 
